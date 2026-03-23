@@ -1,0 +1,47 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+model Cliente {
+    id         Int     @id @default(autoincrement())
+    nome       String
+    email      String  @unique
+    telefone   String?
+    cep        String?
+    logradouro String?
+    bairro     String?
+    localidade String?
+    uf         String?
+    ativo      Boolean @default(true)
+
+    // Relacionamento: Um cliente tem muitos itens (pedidos)
+    pedidos Cardapio[]
+
+    @@map("clientes")
+}
+
+model Cardapio {
+    id         Int       @id @default(autoincrement())
+    nome       String
+    descricao  String?
+    categoria  Categoria
+    disponivel Boolean   @default(true)
+    preco      Decimal   @db.Decimal(10, 2)
+    foto       String?
+
+    clienteId Int?
+    cliente   Cliente? @relation(fields: [clienteId], references: [id])
+
+    @@map("cardapio")
+}
+
+enum Categoria {
+    ENTRADA
+    PRATO_PRINCIPAL
+    SOBREMESA
+    BEBIDA
+}

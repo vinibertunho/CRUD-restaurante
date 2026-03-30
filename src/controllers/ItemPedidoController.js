@@ -1,4 +1,4 @@
-import PedidoModel from '../models/PedidoModel.js';
+import PedidosModel from '../models/PedidosModel.js';
 import ItemPedidoModel from '../models/ItemPedidoModel.js';
 
 export const criar = async (req, res) => {
@@ -16,7 +16,7 @@ export const criar = async (req, res) => {
         if (!itens || !Array.isArray(itens) || itens.length === 0) {
             return res.status(400).json({ error: 'O pedido deve ter pelo menos um item!' });
         }
-        const pedidoInstance = new PedidoModel({ clienteId: parseInt(clienteId) });
+        const pedidoInstance = new PedidosModel({ clienteId: parseInt(clienteId) });
         const pedidoCriado = await pedidoInstance.criar();
 
         const promises = itens.map((item) => {
@@ -43,7 +43,7 @@ export const criar = async (req, res) => {
 
 export const buscarTodos = async (req, res) => {
     try {
-        const registros = await PedidoModel.buscarTodos(req.query);
+        const registros = await PedidosModel.buscarTodos(req.query);
 
         if (!registros || registros.length === 0) {
             return res.status(200).json({ message: 'Nenhum pedido encontrado.' });
@@ -64,7 +64,7 @@ export const buscarPorId = async (req, res) => {
             return res.status(400).json({ error: 'O ID enviado não é um número válido.' });
         }
 
-        const pedido = await PedidoModel.buscarPorId(parseInt(id));
+        const pedido = await PedidosModel.buscarPorId(parseInt(id));
 
         if (!pedido) {
             return res.status(404).json({ error: 'Pedido não encontrado.' });
@@ -77,6 +77,40 @@ export const buscarPorId = async (req, res) => {
     }
 };
 
+export const atualizar = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'O ID enviado não é um número válido.' });
+        }
+
+        const itemExistente = await ItemPedidoModel.buscarPorId(parseInt(id));
+
+        if (!itemExistente) {
+            return res.status(404).json({ error: 'Item do pedido não encontrado para atualizar.' });
+        }
+
+        if (req.body.quantidade !== undefined) {
+            itemExistente.quantidade = parseInt(req.body.quantidade);
+        }
+
+        if (req.body.precoFixo !== undefined) {
+            itemExistente.precoFixo = parseFloat(req.body.precoFixo);
+        }
+
+        const data = await itemExistente.atualizar();
+
+        return res.json({
+            message: 'Item do pedido atualizado com sucesso!',
+            data,
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar item:', error);
+        return res.status(500).json({ error: 'Erro interno ao atualizar o item do pedido.' });
+    }
+};
+
 export const deletar = async (req, res) => {
     try {
         const { id } = req.params;
@@ -85,13 +119,13 @@ export const deletar = async (req, res) => {
             return res.status(400).json({ error: 'ID inválido.' });
         }
 
-        const pedido = await PedidoModel.buscarPorId(parseInt(id));
+        const pedido = await PedidosModel.buscarPorId(parseInt(id));
 
         if (!pedido) {
             return res.status(404).json({ error: 'Pedido não encontrado para deletar.' });
         }
 
-        const instancia = new PedidoModel({ id: pedido.id });
+        const instancia = new PedidosModel({ id: pedido.id });
         await instancia.deletar();
 
         return res.json({ message: `O pedido #${id} foi deletado com sucesso!` });

@@ -1,8 +1,10 @@
 import express from 'express';
 import 'dotenv/config';
-import cardapioRoute from './routes/cardapioRoutes';
+import cardapioRoute from './routes/cardapioRoutes.js';
 import itemPedidoRoute from './routes/itemPedidoRoute.js';
-import fotoRoute from './routes/fotoRoute';
+import fotoRoute from './routes/fotoRoute.js';
+import pedidosRoutes from './routes/pedidosRoutes.js';
+import clienteRoute from './routes/clienteRoute.js';
 
 const app = express();
 app.use(express.json());
@@ -15,7 +17,11 @@ app.get('/', (req, res) => {
 
 // Rotas
 app.use('/cardapio', cardapioRoute);
-app.use('/cardapio', fotoRoute)
+app.use('/cardapio', fotoRoute);
+
+app.use('/clientes', clienteRoute);
+
+app.use('/pedidos', pedidosRoutes);
 
 app.use('/itemPedidos', itemPedidoRoute);
 

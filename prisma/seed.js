@@ -31,13 +31,33 @@ async function main() {
 
     console.log('🍕 Inserindo Itens no Cardápio...');
     const bruschetta = await prisma.cardapio.create({
-        data: { nome: 'Bruschetta Italiana', categoria: 'ENTRADA', preco: 25.5 },
+        data: {
+            nome: 'Bruschetta Italiana',
+            categoria: 'ENTRADA',
+            preco: 25.5,
+            descricao: 'Pão italiano tostado com tomates frescos, manjericão e azeite.',
+            disponivel: true,
+        },
     });
+
     const risoto = await prisma.cardapio.create({
-        data: { nome: 'Risoto de Cogumelos', categoria: 'PRATO_PRINCIPAL', preco: 62.0 },
+        data: {
+            nome: 'Risoto de Cogumelos',
+            categoria: 'PRATO_PRINCIPAL',
+            preco: 62.0,
+            descricao: 'Arroz arbóreo cremoso com mix de cogumelos frescos e queijo parmesão.',
+            disponivel: true,
+        },
     });
+
     const vinho = await prisma.cardapio.create({
-        data: { nome: 'Vinho Tinto', categoria: 'BEBIDA', preco: 120.0 },
+        data: {
+            nome: 'Vinho Tinto',
+            categoria: 'BEBIDA',
+            preco: 120.0,
+            descricao: 'Vinho tinto seco de colheita selecionada, 750ml.',
+            disponivel: true,
+        },
     });
 
     console.log('📝 Criando Pedidos...');

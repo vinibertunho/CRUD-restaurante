@@ -1,4 +1,4 @@
-import PedidoModel from '../models/PedidoModel.js';
+import PedidoModel from '../models/PedidosModel.js';
 import ItemPedidoModel from '../models/ItemPedidoModel.js';
 
 export const criar = async (req, res) => {
@@ -98,5 +98,31 @@ export const deletar = async (req, res) => {
     } catch (error) {
         console.error('Erro ao deletar pedido:', error);
         return res.status(500).json({ error: 'Erro ao deletar pedido.' });
+    }
+};
+
+export const atualizar = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'ID inválido.' });
+        }
+
+        const item = await ItemPedidoModel.buscarPorId(parseInt(id));
+
+        if (!item) {
+            return res.status(404).json({ error: 'Item do pedido não encontrado.' });
+        }
+
+        if (req.body.quantidade !== undefined) item.quantidade = req.body.quantidade;
+        if (req.body.precoFixo !== undefined) item.precoFixo = parseFloat(req.body.precoFixo);
+
+        const data = await item.atualizar();
+
+        return res.json({ message: 'Item atualizado com sucesso!', data });
+    } catch (error) {
+        console.error('Erro ao atualizar item:', error);
+        return res.status(500).json({ error: 'Erro ao atualizar item do pedido.' });
     }
 };

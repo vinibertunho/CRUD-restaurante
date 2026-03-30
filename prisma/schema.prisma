@@ -22,18 +22,18 @@ model Cliente {
     @@map("clientes")
 }
 
-model Cardapio {
-    id          Int          @id @default(autoincrement())
-    nome        String
-    descricao   String?
-    categoria   Categoria
-    disponivel  Boolean      @default(true)
-    preco       Decimal      @db.Decimal(10, 2)
-    foto        String?
-    itemPedidos ItemPedido[]
+    model Cardapio {
+        id          Int          @id @default(autoincrement())
+        nome        String
+        descricao   String?
+        categoria   Categoria
+        disponivel  Boolean      @default(true)
+        preco       Decimal      @db.Decimal(10, 2)
+        foto        String?
+        itemPedidos ItemPedido[]
 
-    @@map("cardapio")
-}
+        @@map("cardapio")
+    }
 
 model Pedido {
     id        Int          @id @default(autoincrement())

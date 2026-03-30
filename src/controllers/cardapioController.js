@@ -8,23 +8,39 @@ export const criar = async (req, res) => {
 
         const { nome, categoria, preco, disponivel } = req.body;
 
-        if (!nome){
+        if (!nome) {
             return res.status(400).json({ error: 'O campo "nome" é obrigatório!' });
         }
+
         if (preco === undefined || preco === null) {
             return res.status(400).json({ error: 'O campo "preco" é obrigatório!' });
         }
-        if (preco <= 0) {
+
+        if (parseFloat(preco) <= 0) {
             return res.status(400).json({ error: 'O campo "preco" precisa ser maior que 0!' });
         }
-        if (categoria !== 'ENTRADA', 'PRATO_PRINCIPAL', 'SOBREMESA', 'BEBIDA') {
-            return res.status(400).json({error: 'O campo "Categoria", deve ser uma das opções: "ENTRADA, PRATO_PRINCIPAL, SOBREMESA, BEBIDA"'})
-        }
-        if (disponivel != true) {
-            return res.status(400).json({error: 'O campo "disponivel" deve ser true para ser criado!'})
+
+        // CORREÇÃO DA VALIDAÇÃO DE CATEGORIA
+        const categoriasValidas = ['ENTRADA', 'PRATO_PRINCIPAL', 'SOBREMESA', 'BEBIDA'];
+        if (!categoriasValidas.includes(categoria)) {
+            return res.status(400).json({
+                error: 'O campo "Categoria" deve ser uma das opções: "ENTRADA, PRATO_PRINCIPAL, SOBREMESA, BEBIDA"',
+            });
         }
 
-        const produto = new CardapioModel({ nome, categoria, preco, disponivel: parseFloat(preco) });
+        if (disponivel !== true && disponivel !== 'true') {
+            return res
+                .status(400)
+                .json({ error: 'O campo "disponivel" deve ser true para ser criado!' });
+        }
+
+        const produto = new CardapioModel({
+            nome,
+            categoria,
+            preco: parseFloat(preco),
+            disponivel: true,
+        });
+
         const data = await produto.criar();
 
         return res.status(201).json({ message: 'Registro criado com sucesso!', data });
@@ -88,17 +104,19 @@ export const atualizar = async (req, res) => {
             return res.status(404).json({ error: 'Registro não encontrado para atualizar.' });
         }
 
-        if (req.body.nome !== undefined) {
-            cardapio.nome = req.body.nome;
-        }
+        if (req.body.nome !== undefined) cardapio.nome = req.body.nome;
+
         if (req.body.categoria !== undefined) {
-            cardapio.categoria = req.body.categoria
+            const categoriasValidas = ['ENTRADA', 'PRATO_PRINCIPAL', 'SOBREMESA', 'BEBIDA'];
+            if (categoriasValidas.includes(req.body.categoria)) {
+                cardapio.categoria = req.body.categoria;
+            }
         }
-        if (req.body.preco !== undefined) {
-            cardapio.preco = parseFloat(req.body.preco);
-        }
+
+        if (req.body.preco !== undefined) cardapio.preco = parseFloat(req.body.preco);
+
         if (req.body.disponivel !== undefined) {
-            cardapio.disponivel = req.body.disponivel
+            cardapio.disponivel = req.body.disponivel === true || req.body.disponivel === 'true';
         }
 
         const data = await cardapio.atualizar();
@@ -126,7 +144,10 @@ export const deletar = async (req, res) => {
 
         await cardapio.deletar();
 
-        return res.json({ message: `O registro "${cardapio.nome}" foi deletado com sucesso!`, deletado: cardapio });
+        return res.json({
+            message: `O registro "${cardapio.nome}" foi deletado com sucesso!`,
+            deletado: cardapio,
+        });
     } catch (error) {
         console.error('Erro ao deletar:', error);
         return res.status(500).json({ error: 'Erro ao deletar registro.' });

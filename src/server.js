@@ -1,8 +1,8 @@
 import express from 'express';
 import 'dotenv/config';
-import cardapioRoute from './routes/cardapioRoutes';
+import cardapioRoute from './routes/cardapioRoutes.js';
 import itemPedidoRoute from './routes/itemPedidoRoute.js';
-import fotoRoute from './routes/fotoRoute';
+import fotoRoute from './routes/fotoRoute.js';
 
 const app = express();
 app.use(express.json());

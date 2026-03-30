@@ -1,8 +1,6 @@
 import fs from 'fs/promises';
-import { PrismaClient } from '@prisma/client';
+import CardapioModel from '../models/CardapioModel.js';
 import { processarFoto, removerFoto } from '../utils/fotoHelper.js';
-
-const prisma = new PrismaClient();
 
 export const verFoto = async (req, res) => {
     try {
@@ -12,9 +10,7 @@ export const verFoto = async (req, res) => {
             return res.status(400).json({ error: 'O ID enviado não é um número válido.' });
         }
 
-        const item = await prisma.cardapio.findUnique({
-            where: { id: parseInt(id) },
-        });
+        const item = await CardapioModel.buscarPorId(parseInt(id));
 
         if (!item) {
             return res.status(404).json({ error: 'Registro de item não encontrado.' });
@@ -46,9 +42,7 @@ export const uploadFoto = async (req, res) => {
             return res.status(400).json({ error: 'O ID enviado não é um número válido' });
         }
 
-        const item = await prisma.cardapio.findUnique({
-            where: { id: parseInt(id) },
-        });
+        const item = await CardapioModel.buscarPorId(parseInt(id));
 
         if (!item) {
             removerFoto(req.file.path);
@@ -59,12 +53,8 @@ export const uploadFoto = async (req, res) => {
             await fs.unlink(item.foto).catch(() => {});
         }
 
-        const novaFoto = await processarFoto(req.file.path);
-
-        const itemAtualizado = await prisma.cardapio.update({
-            where: { id: parseInt(id) },
-            data: { foto: novaFoto },
-        });
+        item.foto = await processarFoto(req.file.path);
+        const itemAtualizado = await item.atualizar();
 
         return res.status(201).json({
             message: 'Foto salva com sucesso!',

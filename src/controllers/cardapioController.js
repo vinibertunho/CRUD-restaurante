@@ -14,11 +14,14 @@ export const criar = async (req, res) => {
         if (preco === undefined || preco === null) {
             return res.status(400).json({ error: 'O campo "preco" é obrigatório!' });
         }
+        if (preco <= 0) {
+            return res.status(400).json({ error: 'O campo "preco" precisa ser maior que 0!' });
+        }
         if (categoria !== 'ENTRADA', 'PRATO_PRINCIPAL', 'SOBREMESA', 'BEBIDA') {
             return res.status(400).json({error: 'O campo "Categoria", deve ser uma das opções: "ENTRADA, PRATO_PRINCIPAL, SOBREMESA, BEBIDA"'})
         }
         if (disponivel != true) {
-            return res.status(400).json({error: 'O campo "disponivel" deve ser true para ser criado'})
+            return res.status(400).json({error: 'O campo "disponivel" deve ser true para ser criado!'})
         }
 
         const produto = new CardapioModel({ nome, categoria, preco, disponivel: parseFloat(preco) });

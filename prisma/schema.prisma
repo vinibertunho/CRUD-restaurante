@@ -7,36 +7,54 @@ datasource db {
 }
 
 model Cliente {
-    id         Int     @id @default(autoincrement())
+    id         Int      @id @default(autoincrement())
     nome       String
-    email      String  @unique
+    email      String   @unique
     telefone   String?
     cep        String?
     logradouro String?
     bairro     String?
     localidade String?
     uf         String?
-    ativo      Boolean @default(true)
-
-    // Relacionamento: Um cliente tem muitos itens (pedidos)
-    pedidos Cardapio[]
+    ativo      Boolean  @default(true)
+    pedidos    Pedido[]
 
     @@map("clientes")
 }
 
 model Cardapio {
-    id         Int       @id @default(autoincrement())
-    nome       String
-    descricao  String?
-    categoria  Categoria
-    disponivel Boolean   @default(true)
-    preco      Decimal   @db.Decimal(10, 2)
-    foto       String?
-
-    clienteId Int?
-    cliente   Cliente? @relation(fields: [clienteId], references: [id])
+    id          Int          @id @default(autoincrement())
+    nome        String
+    descricao   String?
+    categoria   Categoria
+    disponivel  Boolean      @default(true)
+    preco       Decimal      @db.Decimal(10, 2)
+    foto        String?
+    itemPedidos ItemPedido[]
 
     @@map("cardapio")
+}
+
+model Pedido {
+    id        Int          @id @default(autoincrement())
+    createdAt DateTime     @default(now())
+    clienteId Int
+    cliente   Cliente      @relation(fields: [clienteId], references: [id])
+    itens     ItemPedido[]
+
+    @@map("pedidos")
+}
+
+model ItemPedido {
+    id         Int      @id @default(autoincrement())
+    pedidoId   Int
+    pedido     Pedido   @relation(fields: [pedidoId], references: [id])
+    cardapioId Int
+    cardapio   Cardapio @relation(fields: [cardapioId], references: [id])
+    quantidade Int
+    precoFixo  Decimal  @db.Decimal(10, 2)
+
+    @@map("itens_pedido")
 }
 
 enum Categoria {

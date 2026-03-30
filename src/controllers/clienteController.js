@@ -18,9 +18,6 @@ export const criar = async (req, res) => {
         if (!cep) {
             return res.status(400).json({ error: 'O campo "cep" é obrigatório!' });
         }
-        if (!localidade) {
-            return res.status(400).json({ error: 'O campo "localidade" é obrigatório!' });
-        }
 
         const cliente = new clienteModel({
             nome,

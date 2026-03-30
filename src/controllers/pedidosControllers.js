@@ -2,22 +2,24 @@ import PedidosModel from '../models/PedidosModel.js';
 
 export const criar = async (req, res) => {
     try {
-        if (!req.body) {
+        if (!req.body || Object.keys(req.body).length === 0) {
             return res.status(400).json({ error: 'Corpo da requisição vazio. Envie os dados!' });
         }
 
-        const { quantidade, precoFixo: preco } = req.body;
+        const { clienteId, estado } = req.body;
 
-
-        if (preco === undefined || preco === null) {
-            return res.status(400).json({ error: 'O campo "preco" é obrigatório!' });
+        if (!clienteId) {
+            return res
+                .status(400)
+                .json({ error: 'O campo "clienteId" é obrigatório para criar um pedido!' });
         }
 
-        pedido.quantidade = parseInt(req.body.quantidade, 10)
-        
-        const pedido = new PedidosModel({ quantidade, preco: parseFloat(preco) });
-        const data = await pedido.criar();
+        const novoPedido = new PedidosModel({
+            clienteId: parseInt(clienteId, 10),
+            estado: estado !== undefined ? estado : true,
+        });
 
+        const data = await novoPedido.criar();
 
         return res.status(201).json({ message: 'Pedido criado com sucesso!', data });
     } catch (error) {
@@ -29,11 +31,9 @@ export const criar = async (req, res) => {
 export const buscarTodos = async (req, res) => {
     try {
         const pedidos = await PedidosModel.buscarTodos(req.query);
-
         if (!pedidos || pedidos.length === 0) {
             return res.status(200).json({ message: 'Nenhum pedido encontrado.' });
         }
-
         return res.json(pedidos);
     } catch (error) {
         console.error('Erro ao buscar:', error);
@@ -44,17 +44,13 @@ export const buscarTodos = async (req, res) => {
 export const buscarPorId = async (req, res) => {
     try {
         const { id } = req.params;
-
         if (isNaN(id)) {
             return res.status(400).json({ error: 'O ID enviado não é um número válido.' });
         }
-
         const pedido = await PedidosModel.buscarPorId(parseInt(id));
-
         if (!pedido) {
             return res.status(404).json({ error: 'Pedido não encontrado.' });
         }
-
         return res.json({ data: pedido });
     } catch (error) {
         console.error('Erro ao buscar:', error);
@@ -65,33 +61,17 @@ export const buscarPorId = async (req, res) => {
 export const atualizar = async (req, res) => {
     try {
         const { id } = req.params;
-
-        if (isNaN(id)) {
-            return res.status(400).json({ error: 'ID inválido.' });
-        }
-
-        if (!req.body) {
-            return res.status(400).json({ error: 'Corpo da requisição vazio. Envie os dados!' });
-        }
+        if (isNaN(id)) return res.status(400).json({ error: 'ID inválido.' });
 
         const pedido = await PedidosModel.buscarPorId(parseInt(id));
+        if (!pedido) return res.status(404).json({ error: 'Pedido não encontrado.' });
 
-        if (!pedido) {
-            return res.status(404).json({ error: 'Pedido não encontrado para atualizar.' });
-        }
-
-
-        if (req.body.quantidade !== undefined) {
-           pedido.quantidade = parseFloat(req.body.quantidade, 10);
-        }
-
-        if (req.body.preco !== undefined) {
-           pedido.preco = parseFloat(req.body.preco);
+        if (req.body.estado !== undefined) {
+            pedido.estado = req.body.estado === true || req.body.estado === 'true';
         }
 
         const data = await pedido.atualizar();
-
-        return res.json({ message: `O registro "${data.quantidade}" foi atualizado com sucesso!`, data });
+        return res.json({ message: 'Pedido atualizado com sucesso!', data });
     } catch (error) {
         console.error('Erro ao atualizar:', error);
         return res.status(500).json({ error: 'Erro ao atualizar registro.' });
@@ -101,20 +81,14 @@ export const atualizar = async (req, res) => {
 export const deletar = async (req, res) => {
     try {
         const { id } = req.params;
-
-        if (isNaN(id)) {
-            return res.status(400).json({ error: 'ID inválido.' });
-        }
+        if (isNaN(id)) return res.status(400).json({ error: 'ID inválido.' });
 
         const pedido = await PedidosModel.buscarPorId(parseInt(id));
-
-        if (!pedido) {
+        if (!pedido)
             return res.status(404).json({ error: 'Registro não encontrado para deletar.' });
-        }
 
         await pedido.deletar();
-
-        return res.json({ message: `O registro "${pedido.nome}" foi deletado com sucesso!`, deletado: pedido });
+        return res.json({ message: `O pedido #${id} foi deletado com sucesso!` });
     } catch (error) {
         console.error('Erro ao deletar:', error);
         return res.status(500).json({ error: 'Erro ao deletar registro.' });

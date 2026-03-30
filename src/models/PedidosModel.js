@@ -1,61 +1,82 @@
 import prisma from '../utils/prismaClient.js';
 
 export default class PedidosModel {
-    constructor({ id = null, cardapioId = null, quantidade = null, preco = null } = {}) {
+    constructor({ id = null, clienteId = null, estado = true, createdAt = null } = {}) {
         this.id = id;
-        this.cardapioId = cardapioId;
-        this.quantidade = quantidade;
-        this.preco = preco;
+        this.clienteId = clienteId;
+        this.estado = estado;
+        this.createdAt = createdAt;
     }
 
     async criar() {
-        if (this.preco <= 0) {
-            throw new Error('Não é possível criar pedido com o preço menor ou igual a 0');
+        if (!this.clienteId) {
+            throw new Error('Um pedido precisa de um clienteId válido.');
         }
 
         return prisma.pedido.create({
             data: {
-                quantidade: this.quantidade,
-                preco: this.preco,
+                clienteId: this.clienteId,
+                estado: this.estado,
             },
         });
     }
 
     async atualizar() {
-        if (this.preco <= 0) {
-            throw new Error('Não é possível atualizar pedido com o preço menor ou igual a 0');
-        }
+        if (!this.id) throw new Error('ID do pedido não fornecido para atualização.');
 
         return prisma.pedido.update({
             where: { id: this.id },
-            data: { quantidade: this.quantidade, preco: this.preco },
+            data: {
+                estado: this.estado,
+            },
         });
     }
 
     async deletar() {
-        return prisma.pedido.delete({ where: { id: this.id } });
+        if (!this.id) throw new Error('ID do pedido não fornecido para deleção.');
+
+        await prisma.itemPedido.deleteMany({
+            where: { pedidoId: this.id },
+        });
+
+        return prisma.pedido.delete({
+            where: { id: this.id },
+        });
     }
 
     static async buscarTodos(filtros = {}) {
         const where = {};
 
         if (filtros.estado !== undefined) {
-            where.estado = filtros.estado === 'true';
+            where.estado = filtros.estado === 'true' || filtros.estado === true;
         }
 
-        if (filtros.preco !== undefined) {
-            where.preco = parseFloat(filtros.preco);
+        if (filtros.clienteId !== undefined) {
+            where.clienteId = parseInt(filtros.clienteId);
         }
 
-        return prisma.pedido.findMany({ where });
+        return prisma.pedido.findMany({
+            where,
+            include: {
+                itens: true,
+                cliente: true,
+            },
+        });
     }
 
-
     static async buscarPorId(id) {
-        const data = await prisma.pedido.findUnique({ where: { id } });
-        if (!data) {
-            return null;
-        }
+        if (!id) return null;
+
+        const data = await prisma.pedido.findUnique({
+            where: { id: parseInt(id) },
+            include: {
+                itens: true,
+                cliente: true,
+            },
+        });
+
+        if (!data) return null;
+
         return new PedidosModel(data);
     }
 }

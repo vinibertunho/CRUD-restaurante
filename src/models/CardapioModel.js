@@ -1,7 +1,7 @@
 import prisma from '../utils/prismaClient.js';
 
 export default class CardapioModel {
-        constructor({ id = null, nome = null, descricao = null, categoria = null, disponivel = null, preco = null, foto = null } = {}) {
+        constructor({ id = null, nome, descricao = null, categoria, disponivel = null, preco, foto = null } = {}) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
@@ -17,6 +17,7 @@ export default class CardapioModel {
                 nome: this.nome,
                 descricao: this.descricao,
                 categoria: this.categoria,
+                disponivel: this.disponivel,
                 preco: this.preco,
             },
         });

@@ -24,7 +24,7 @@ export default class CardapioModel {
     }
 
     async atualizar() {
-        return prisma.exemplo.update({
+        return prisma.cardapio.update({
             where: { id: this.id },
             data: {
                 nome: this.nome,
@@ -56,7 +56,7 @@ export default class CardapioModel {
             where.preco = parseFloat(filtros.preco);
         }
 
-        return prisma.exemplo.findMany({ where });
+        return prisma.cardapio.findMany({ where });
     }
 
     static async buscarPorId(id) {

@@ -57,13 +57,13 @@ export const buscarPorId = async (req, res) => {
             return res.status(400).json({ error: 'O ID enviado não é um número válido.' });
         }
 
-        const exemplo = await CardapioModel.buscarPorId(parseInt(id));
+        const cardapio = await CardapioModel.buscarPorId(parseInt(id));
 
-        if (!exemplo) {
+        if (!cardapio) {
             return res.status(404).json({ error: 'Registro não encontrado.' });
         }
 
-        return res.json({ data: exemplo });
+        return res.json({ data: cardapio });
     } catch (error) {
         console.error('Erro ao buscar:', error);
         return res.status(500).json({ error: 'Erro ao buscar registro.' });
@@ -101,7 +101,7 @@ export const atualizar = async (req, res) => {
             cardapio.disponivel = req.body.disponivel
         }
 
-        const data = await exemplo.atualizar();
+        const data = await cardapio.atualizar();
 
         return res.json({ message: `O registro "${data.nome}" foi atualizado com sucesso!`, data });
     } catch (error) {

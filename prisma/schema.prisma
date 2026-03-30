@@ -41,6 +41,7 @@ model Pedido {
     clienteId Int
     cliente   Cliente      @relation(fields: [clienteId], references: [id])
     itens     ItemPedido[]
+    estado    Boolean      @default(true)
 
     @@map("pedidos")
 }

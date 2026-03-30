@@ -8,7 +8,7 @@ export const criar = async (req, res) => {
 
         const { nome, estado, preco } = req.body;
 
-        if (!nome){
+        if (!nome) {
             return res.status(400).json({ error: 'O campo "nome" é obrigatório!' });
         }
         if (preco === undefined || preco === null) {
@@ -114,7 +114,10 @@ export const deletar = async (req, res) => {
 
         await exemplo.deletar();
 
-        return res.json({ message: `O registro "${exemplo.nome}" foi deletado com sucesso!`, deletado: exemplo });
+        return res.json({
+            message: `O registro "${exemplo.nome}" foi deletado com sucesso!`,
+            deletado: exemplo,
+        });
     } catch (error) {
         console.error('Erro ao deletar:', error);
         return res.status(500).json({ error: 'Erro ao deletar registro.' });

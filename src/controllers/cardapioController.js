@@ -1,4 +1,4 @@
-import ExemploModel from '../models/CardapioModel.js';
+import CardapioModel from '../models/CardapioModel.js';
 
 export const criar = async (req, res) => {
     try {
@@ -14,9 +14,18 @@ export const criar = async (req, res) => {
         if (preco === undefined || preco === null) {
             return res.status(400).json({ error: 'O campo "preco" é obrigatório!' });
         }
+        if (preco <= 0) {
+            return res.status(400).json({ error: 'O campo "preco" precisa ser maior que 0!' });
+        }
+        if (categoria !== 'ENTRADA', 'PRATO_PRINCIPAL', 'SOBREMESA', 'BEBIDA') {
+            return res.status(400).json({error: 'O campo "Categoria", deve ser uma das opções: "ENTRADA, PRATO_PRINCIPAL, SOBREMESA, BEBIDA"'})
+        }
+        if (disponivel != true) {
+            return res.status(400).json({error: 'O campo "disponivel" deve ser true para ser criado!'})
+        }
 
-        const exemplo = new CardapioModel({ nome, categoria, preco, disponivel: parseFloat(preco) });
-        const data = await exemplo.criar();
+        const produto = new CardapioModel({ nome, categoria, preco, disponivel: parseFloat(preco) });
+        const data = await produto.criar();
 
         return res.status(201).json({ message: 'Registro criado com sucesso!', data });
     } catch (error) {
@@ -27,7 +36,7 @@ export const criar = async (req, res) => {
 
 export const buscarTodos = async (req, res) => {
     try {
-        const registros = await ExemploModel.buscarTodos(req.query);
+        const registros = await CardapioModel.buscarTodos(req.query);
 
         if (!registros || registros.length === 0) {
             return res.status(200).json({ message: 'Nenhum registro encontrado.' });
@@ -48,7 +57,7 @@ export const buscarPorId = async (req, res) => {
             return res.status(400).json({ error: 'O ID enviado não é um número válido.' });
         }
 
-        const exemplo = await ExemploModel.buscarPorId(parseInt(id));
+        const exemplo = await CardapioModel.buscarPorId(parseInt(id));
 
         if (!exemplo) {
             return res.status(404).json({ error: 'Registro não encontrado.' });
@@ -73,20 +82,23 @@ export const atualizar = async (req, res) => {
             return res.status(400).json({ error: 'Corpo da requisição vazio. Envie os dados!' });
         }
 
-        const exemplo = await ExemploModel.buscarPorId(parseInt(id));
+        const cardapio = await CardapioModel.buscarPorId(parseInt(id));
 
-        if (!exemplo) {
+        if (!cardapio) {
             return res.status(404).json({ error: 'Registro não encontrado para atualizar.' });
         }
 
         if (req.body.nome !== undefined) {
-            exemplo.nome = req.body.nome;
+            cardapio.nome = req.body.nome;
         }
-        if (req.body.estado !== undefined) {
-            exemplo.estado = req.body.estado;
+        if (req.body.categoria !== undefined) {
+            cardapio.categoria = req.body.categoria
         }
         if (req.body.preco !== undefined) {
-            exemplo.preco = parseFloat(req.body.preco);
+            cardapio.preco = parseFloat(req.body.preco);
+        }
+        if (req.body.disponivel !== undefined) {
+            cardapio.disponivel = req.body.disponivel
         }
 
         const data = await exemplo.atualizar();
@@ -106,15 +118,15 @@ export const deletar = async (req, res) => {
             return res.status(400).json({ error: 'ID inválido.' });
         }
 
-        const exemplo = await ExemploModel.buscarPorId(parseInt(id));
+        const cardapio = await CardapioModel.buscarPorId(parseInt(id));
 
-        if (!exemplo) {
+        if (!cardapio) {
             return res.status(404).json({ error: 'Registro não encontrado para deletar.' });
         }
 
-        await exemplo.deletar();
+        await cardapio.deletar();
 
-        return res.json({ message: `O registro "${exemplo.nome}" foi deletado com sucesso!`, deletado: exemplo });
+        return res.json({ message: `O registro "${cardapio.nome}" foi deletado com sucesso!`, deletado: cardapio });
     } catch (error) {
         console.error('Erro ao deletar:', error);
         return res.status(500).json({ error: 'Erro ao deletar registro.' });

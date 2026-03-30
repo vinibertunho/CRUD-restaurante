@@ -9,7 +9,7 @@ export default class PedidosModel {
     }
 
     async criar() {
-        if (preco <= 0) {
+        if (this.preco <= 0) {
             throw new Error('Não é possível criar pedido com o preço menor ou igual a 0');
         }
 
@@ -22,7 +22,7 @@ export default class PedidosModel {
     }
 
     async atualizar() {
-        if (preco <= 0) {
+        if (this.preco <= 0) {
             throw new Error('Não é possível atualizar pedido com o preço menor ou igual a 0');
         }
 
@@ -49,7 +49,7 @@ export default class PedidosModel {
 
         return prisma.pedido.findMany({ where });
     }
-    
+
 
     static async buscarPorId(id) {
         const data = await prisma.pedido.findUnique({ where: { id } });

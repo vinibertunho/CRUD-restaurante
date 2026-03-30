@@ -13,7 +13,8 @@ export const criar = async (req, res) => {
             return res.status(400).json({ error: 'O campo "preco" é obrigatório!' });
         }
 
-        quantidade = parseInt(req.body.quantidade)
+        pedido.quantidade = parseInt(req.body.quantidade, 10)
+        
         const pedido = new PedidosModel({ quantidade, preco: parseFloat(preco) });
         const data = await pedido.criar();
 

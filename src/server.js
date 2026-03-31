@@ -5,6 +5,7 @@ import itemPedidoRoute from './routes/itemPedidoRoute.js';
 import fotoRoute from './routes/fotoRoute.js';
 import pedidosRoutes from './routes/pedidosRoutes.js';
 import clienteRoute from './routes/clienteRoute.js';
+import pdfRoute from './routes/pdfRoute.js';
 
 const app = express();
 app.use(express.json());
@@ -18,8 +19,9 @@ app.get('/', (req, res) => {
 // Rotas
 app.use('/cardapio', cardapioRoute);
 app.use('/cardapio', fotoRoute);
+app.use('/cardapio', pdfRoute);
 
-app.use('/clientes', clienteRoute);
+app.use('/api/clientes', clienteRoute);
 
 app.use('/pedidos', pedidosRoutes);
 

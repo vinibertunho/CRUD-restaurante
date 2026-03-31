@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
+import path from 'path';
 import CardapioModel from '../models/CardapioModel.js';
-import { processarFoto, removerFoto } from '../utils/fotoHelper.js';
+import { processarFoto, removerFoto, UPLOADS_DIR } from '../utils/fotoHelper.js';
 
 export const verFoto = async (req, res) => {
     try {
@@ -12,19 +13,14 @@ export const verFoto = async (req, res) => {
 
         const item = await CardapioModel.buscarPorId(parseInt(id));
 
-        if (!item) {
-            return res.status(404).json({ error: 'Registro de item não encontrado.' });
+        if (!item || !item.foto) {
+            return res.status(404).json({ error: 'Este item não possui foto cadastrada.' });
         }
 
-        if (!item.foto) {
-            return res.status(404).json({
-                error: 'Este item não possui foto cadastrada',
-            });
-        }
+        const caminhoArquivo = path.join(UPLOADS_DIR, path.basename(item.foto));
 
-        return res.sendFile(item.foto, { root: '.' });
+        return res.sendFile(caminhoArquivo);
     } catch (error) {
-        console.error('Erro ao buscar:', error);
         return res.status(500).json({ error: 'Erro ao buscar registro de item.' });
     }
 };
@@ -50,10 +46,14 @@ export const uploadFoto = async (req, res) => {
         }
 
         if (item.foto) {
-            await fs.unlink(item.foto).catch(() => {});
+            const caminhoAntigo = path.join(UPLOADS_DIR, path.basename(item.foto));
+            await fs.unlink(caminhoAntigo).catch(() => {});
         }
 
-        item.foto = await processarFoto(req.file.path);
+        await processarFoto(req.file.path);
+
+        item.foto = req.file.filename;
+
         const itemAtualizado = await item.atualizar();
 
         return res.status(201).json({
@@ -61,7 +61,6 @@ export const uploadFoto = async (req, res) => {
             foto: itemAtualizado.foto,
         });
     } catch (error) {
-        console.error('Erro ao salvar foto:', error);
         if (req.file) removerFoto(req.file.path);
         return res.status(500).json({ error: 'Erro interno ao salvar a foto.' });
     }

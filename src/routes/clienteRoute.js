@@ -1,12 +1,15 @@
 import express from 'express';
-import * as controller from '../controllers/clienteController.js';
+import ApiKey from '../utils/apiKey.js';
+import * as ClienteController from '../controllers/clienteController.js';
 
 const router = express.Router();
 
-router.post('/', controller.criar);
-router.get('/', controller.buscarTodos);
-router.get('/:id', controller.buscarPorId);
-router.put('/:id', controller.atualizar);
-router.delete('/:id', controller.deletar);
+router.use(ApiKey);
+
+router.post('/', ClienteController.criar);
+router.get('/', ClienteController.buscarTodos);
+router.get('/:id', ClienteController.buscarPorId);
+router.put('/:id', ClienteController.atualizar);
+router.delete('/:id', ClienteController.deletar);
 
 export default router;

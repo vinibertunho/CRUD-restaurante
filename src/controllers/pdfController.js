@@ -1,6 +1,8 @@
 import CardapioModel from '../models/CardapioModel.js';
 import { gerarPdfCardapio, gerarPdfIndividual } from '../utils/pdfHelper.js';
 
+const parseId = (value) => Number.parseInt(value, 10);
+
 export const gerarRelatorioGeral = async (req, res) => {
     try {
         const itens = await CardapioModel.buscarTodos(req.query);
@@ -27,13 +29,13 @@ export const gerarRelatorioGeral = async (req, res) => {
 
 export const gerarRelatorioIndividual = async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = parseId(req.params.id);
 
-        if (isNaN(id)) {
+        if (Number.isNaN(id)) {
             return res.status(400).json({ error: 'O ID enviado não é um número válido.' });
         }
 
-        const item = await CardapioModel.buscarPorId(parseInt(id));
+        const item = await CardapioModel.buscarPorId(id);
 
         if (!item) {
             return res.status(404).json({ error: 'Registro não encontrado.' });

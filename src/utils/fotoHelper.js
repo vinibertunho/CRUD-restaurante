@@ -15,9 +15,8 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, UPLOADS_DIR),
     filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
         const id = req.params.id || 'item';
-        cb(null, `cardapio_${id}_${Date.now()}${ext}`);
+        cb(null, `cardapio_${id}_${Date.now()}.jpg`);
     },
 });
 

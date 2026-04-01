@@ -17,12 +17,12 @@ const options = {
         title: 'API Restaurante',
         description: 'Documentação da API de Gerenciamento de Restaurante',
     },
-    servers: [{ url: 'http://localhost:3000', description: 'Servidor de Desenvolvimento' }],
+    servers: [{ url: 'http://localhost:3000' }],
     baseDir: process.cwd(),
-    filesPattern: './src/controllers/*.js',
+    filesPattern:
+        './src/controllers/{cardapioController,clienteController,pedidosControllers,ItemPedidoController}.js',
     swaggerUIPath: '/api-docs',
     exposeSwaggerUI: true,
-    exposeApiDocs: false,
     notRequiredAsNullable: false,
 };
 

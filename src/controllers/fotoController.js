@@ -5,14 +5,6 @@ import { processarFoto, removerFoto, UPLOADS_DIR } from '../utils/fotoHelper.js'
 
 const parseId = (value) => Number.parseInt(value, 10);
 
-/**
- * GET /cardapio/{id}/foto
- * @tags Fotos
- * @summary Obtém a foto de um item
- * @param {integer} id.path.required - ID do item
- * @return 200 - Imagem retornada
- * @return 404 - Foto não encontrada
- */
 export const verFoto = async (req, res) => {
     try {
         const id = parseId(req.params.id);
@@ -31,17 +23,6 @@ export const verFoto = async (req, res) => {
     }
 };
 
-/**
- * POST /cardapio/{id}/foto
- * @tags Fotos
- * @summary Faz upload de foto para item do cardápio
- * @description Selecione um arquivo de imagem do seu computador para associar ao item.
- * @param {integer} id.path.required - ID do item do cardápio
- * @param {file} foto.formData.required - O arquivo de imagem para subir
- * @return 201 - Foto salva com sucesso
- * @return 400 - Erro no upload ou ID inválido
- * @return 404 - Item não encontrado
- */
 export const uploadFoto = async (req, res) => {
     try {
         if (!req.file) {

@@ -1,187 +1,157 @@
-import clienteModel from '../models/ClienteModel.js';
+import ClienteModel from '../models/ClienteModel.js';
 
+const parseId = (value) => Number.parseInt(value, 10);
+
+/**
+ * @typedef {object} ReqBodyCliente
+ * @property {string} nome.required - Nome do cliente
+ * @property {string} email.required - Email do cliente
+ * @property {string} cep.required - CEP do cliente
+ * @property {string} telefone - Telefone de contato
+ * @property {boolean} ativo - Status do cliente
+ */
+
+/**
+ * POST /api/clientes
+ * @tags Clientes
+ * @summary Cria um novo registro de cliente
+ * @description Endpoint responsável por cadastrar um novo cliente.
+ * @param { ReqBodyCliente } request.body.required
+ * @return 201 - Registro criado com sucesso
+ * @return 400 - Erro de validação ou CEP inválido
+ * @return 500 - Erro interno do servidor
+ */
 export const criar = async (req, res) => {
     try {
-        if (!req.body) {
-            return res.status(400).json({ error: 'Corpo da requisição vazio. Envie os dados!' });
+        const { nome, email, cep } = req.body;
+
+        if (!nome || nome.length < 3 || !email || !cep) {
+            return res
+                .status(400)
+                .json({ error: 'Campo obrigatório não informado ou nome muito curto.' });
         }
 
-        const { nome, email, cep, localidade, telefone, cpf, logradouro, bairro, uf, ativo } =
-            req.body;
-
-        if (!nome) {
-            return res.status(400).json({ error: 'O campo "nome" é obrigatório!' });
-        }
-        if (!email) {
-            return res.status(400).json({ error: 'O campo "email" é obrigatório!' });
-        }
-        if (!cep) {
-            return res.status(400).json({ error: 'O campo "cep" é obrigatório!' });
-        }
-
-        const cliente = new clienteModel({
-            nome,
-            email,
-            cep,
-            localidade,
-            telefone,
-            cpf,
-            logradouro,
-            bairro,
-            uf,
-            ativo,
-        });
+        const cliente = new ClienteModel(req.body);
         const data = await cliente.criar();
 
         return res.status(201).json({ message: 'Registro criado com sucesso!', data });
     } catch (error) {
-        console.error('Erro ao criar:', error);
-        if (error.code === 'P2002') {
-            return res.status(409).json({ error: 'Email já cadastrado.' });
-        }
-        if (error.message) {
-            return res.status(400).json({ error: error.message });
-        }
-        return res.status(500).json({ error: 'Erro interno ao salvar o registro.' });
+        const status = error.message.includes('CEP') ? 400 : 500;
+        return res.status(status).json({ error: error.message });
     }
 };
 
+/**
+ * GET /api/clientes
+ * @tags Clientes
+ * @summary Busca todos os registros de clientes
+ * @description Endpoint responsável por buscar todos os clientes. Aceita filtros via query.
+ * @param {string} nome.query - Filtrar por nome
+ * @param {string} email.query - Filtrar por email
+ * @param {string} localidade.query - Filtrar por localidade
+ * @return 200 - Lista de registros encontrados
+ * @return 500 - Erro interno do servidor
+ */
 export const buscarTodos = async (req, res) => {
     try {
-        const registros = await clienteModel.buscarTodos(req.query);
-
-        if (!registros || registros.length === 0) {
-            return res.status(200).json({ message: 'Nenhum registro encontrado.' });
-        }
-
+        const registros = await ClienteModel.buscarTodos(req.query);
         return res.json(registros);
     } catch (error) {
-        console.error('Erro ao buscar:', error);
         return res.status(500).json({ error: 'Erro ao buscar registros.' });
     }
 };
 
+/**
+ * GET /api/clientes/{id}
+ * @tags Clientes
+ * @summary Busca um registro de cliente por ID
+ * @param {integer} id.path.required - O ID do cliente
+ * @return 200 - Registro encontrado com sucesso
+ * @return 404 - Registro não encontrado
+ * @return 500 - Erro interno do servidor
+ */
 export const buscarPorId = async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = parseId(req.params.id);
 
-        if (isNaN(id)) {
-            return res.status(400).json({ error: 'O ID enviado não é um número válido.' });
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ error: 'ID inválido.' });
         }
 
-        const cliente = await clienteModel.buscarPorId(parseInt(id));
+        const data = await ClienteModel.buscarPorId(id);
 
-        if (!cliente) {
-            return res.status(404).json({ error: 'Registro não encontrado.' });
-        }
-
-        return res.json({ data: cliente });
+        if (!data) return res.status(404).json({ error: 'Registro não encontrado.' });
+        return res.json({ data });
     } catch (error) {
-        console.error('Erro ao buscar:', error);
         return res.status(500).json({ error: 'Erro ao buscar registro.' });
     }
 };
 
+/**
+ * PUT /api/clientes/{id}
+ * @tags Clientes
+ * @summary Atualiza um registro de cliente por ID
+ * @param {integer} id.path.required - O ID do cliente
+ * @param { ReqBodyCliente } request.body.required
+ * @return 200 - Registro atualizado com sucesso
+ * @return 400 - Operação não permitida ou dados inválidos
+ * @return 404 - Registro não encontrado
+ * @return 500 - Erro interno do servidor
+ */
 export const atualizar = async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = parseId(req.params.id);
 
-        if (isNaN(id)) {
+        if (Number.isNaN(id)) {
             return res.status(400).json({ error: 'ID inválido.' });
         }
 
-        if (!req.body) {
-            return res.status(400).json({ error: 'Corpo da requisição vazio. Envie os dados!' });
-        }
+        const cliente = await ClienteModel.buscarPorId(id);
 
-        const cliente = await clienteModel.buscarPorId(parseInt(id));
-
-        if (!cliente) {
-            return res.status(404).json({ error: 'Registro não encontrado para atualizar.' });
-        }
+        if (!cliente) return res.status(404).json({ error: 'Registro não encontrado.' });
 
         if (cliente.ativo === false) {
-            return res.status(403).json({ error: 'Operacao nao permitida: cliente inativo.' });
+            return res.status(400).json({ error: 'Operação não permitida para registro inativo.' });
         }
 
-        if (req.body.nome !== undefined) {
-            cliente.nome = req.body.nome;
-        }
-        if (req.body.email !== undefined) {
-            cliente.email = req.body.email;
-        }
-        if (req.body.telefone !== undefined) {
-            cliente.telefone = req.body.telefone;
-        }
-        if (req.body.cpf !== undefined) {
-            cliente.cpf = req.body.cpf;
-        }
-        if (req.body.cep !== undefined) {
-            cliente.cep = req.body.cep;
-        }
-        if (req.body.logradouro !== undefined) {
-            cliente.logradouro = req.body.logradouro;
-        }
-        if (req.body.bairro !== undefined) {
-            cliente.bairro = req.body.bairro;
-        }
-        if (req.body.localidade !== undefined) {
-            cliente.localidade = req.body.localidade;
-        }
-        if (req.body.uf !== undefined) {
-            cliente.uf = req.body.uf;
-        }
-        if (req.body.ativo !== undefined) {
-            cliente.ativo = req.body.ativo;
-        }
-
+        Object.assign(cliente, req.body);
         const data = await cliente.atualizar();
 
-        return res.json({ message: `O registro "${data.nome}" foi atualizado com sucesso!`, data });
+        return res.json({ message: 'Registro atualizado com sucesso!', data });
     } catch (error) {
-        console.error('Erro ao atualizar:', error);
-        if (error.message === 'Operacao nao permitida: cliente inativo.') {
-            return res.status(403).json({ error: error.message });
-        }
-        if (error.code === 'P2002') {
-            return res.status(409).json({ error: 'Email já cadastrado.' });
-        }
-        if (error.message) {
-            return res.status(400).json({ error: error.message });
-        }
-        return res.status(500).json({ error: 'Erro ao atualizar registro.' });
+        return res.status(400).json({ error: error.message });
     }
 };
 
+/**
+ * DELETE /api/clientes/{id}
+ * @tags Clientes
+ * @summary Deleta um registro de cliente por ID
+ * @param {integer} id.path.required - O ID do cliente
+ * @return 200 - Registro deletado com sucesso
+ * @return 400 - Operação não permitida
+ * @return 404 - Registro não encontrado
+ * @return 500 - Erro interno do servidor
+ */
 export const deletar = async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = parseId(req.params.id);
 
-        if (isNaN(id)) {
+        if (Number.isNaN(id)) {
             return res.status(400).json({ error: 'ID inválido.' });
         }
 
-        const cliente = await clienteModel.buscarPorId(parseInt(id));
+        const cliente = await ClienteModel.buscarPorId(id);
 
-        if (!cliente) {
-            return res.status(404).json({ error: 'Registro não encontrado para deletar.' });
-        }
+        if (!cliente) return res.status(404).json({ error: 'Registro não encontrado.' });
 
         if (cliente.ativo === false) {
-            return res.status(403).json({ error: 'Operacao nao permitida: cliente inativo.' });
+            return res.status(400).json({ error: 'Operação não permitida para registro inativo.' });
         }
 
         await cliente.deletar();
-
-        return res.json({
-            message: `O registro "${cliente.nome}" foi deletado com sucesso!`,
-            deletado: cliente,
-        });
+        return res.json({ message: 'Registro deletado com sucesso!' });
     } catch (error) {
-        console.error('Erro ao deletar:', error);
-        if (error.message === 'Operacao nao permitida: cliente inativo.') {
-            return res.status(403).json({ error: error.message });
-        }
         return res.status(500).json({ error: 'Erro ao deletar registro.' });
     }
 };

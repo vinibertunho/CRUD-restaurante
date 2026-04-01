@@ -55,14 +55,24 @@ export default class CardapioModel {
         if (filtros.nome) {
             where.nome = { contains: filtros.nome, mode: 'insensitive' };
         }
+        if (filtros.descricao) {
+            where.descricao = { contains: filtros.descricao, mode: 'insensitive' };
+        }
         if (filtros.categoria) {
-            where.categoria = { contains: filtros.categoria, mode: 'insensitive' };
+            where.categoria = filtros.categoria;
         }
         if (filtros.disponivel !== undefined) {
             where.disponivel = filtros.disponivel === 'true';
         }
-        if (filtros.preco !== undefined) {
-            where.preco = parseFloat(filtros.preco);
+
+        if (filtros.precoMin !== undefined || filtros.precoMax !== undefined) {
+            where.preco = {};
+            if (filtros.precoMin !== undefined) {
+                where.preco.gte = filtros.precoMin;
+            }
+            if (filtros.precoMax !== undefined) {
+                where.preco.lte = filtros.precoMax;
+            }
         }
 
         return prisma.cardapio.findMany({ where });
